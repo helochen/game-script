@@ -282,21 +282,23 @@ def uploadItem(rect, hwnd, taskInfo):
     windowImg = ImageGrab.grab([int(rect[0] * scale), int(rect[1] * scale), int(rect[2] * scale), int(rect[3] * scale)])
     windowImg.save(u"uploadBox.jpg")
     time.sleep(3)
-    px, py = analysisItemInfo(u"uploadBox.jpg", u"action/uploadbox.jpg")
-    windowImg = ImageGrab.grab([px - 300, py, px + 450, py + 350])
+    # 上交物品
+    px, py = analysisItemInfo(u"uploadBox.jpg", u"action/ok.jpg")
+    # TODO 坐标运算
+    px_find, py_find = analysisItemInfo(u"uploadBox.jpg", u"action/uploadbox.jpg")
+    windowImg = ImageGrab.grab([px_find - 300, py, px_find + 450, py_find + 350])
     windowImg.save(u"currentItems.jpg")
     time.sleep(3)
     # 找物品
-    px, py = analysisItemInfo(u"currentItems.jpg", taskInfo[2])
-    if px is None or py is None:
+    px_find, py_find = analysisItemInfo(u"currentItems.jpg", taskInfo[2])
+    if px_find is None or py_find is None:
         print(u"没有找到物品")
         return
     else:
         # 点击确认
-        mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(px / scale) - 6, int(py / scale) - 29))
+        mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(px_find / scale) - 6, int(px_find / scale) - 29))
     time.sleep(1.5)
-    # 上交物品
-    px, py = analysisItemInfo(u"currentItems.jpg", u"action/ok.jpg")
+
     mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(px / scale) - 6, int(py / scale) - 29))
     time.sleep(1.5)
     mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(px / scale) - 6, int(py / scale) - 29))
