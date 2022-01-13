@@ -17,10 +17,83 @@ scale = 1.25
 
 task_items_info = [
     # 物品名称，  商店页码, 对比图形路径
-    ("茶花", 1, u"items/chahua.jpg"),
+    ("臭", 0, u"items/chou.jpg"),
+    ("真豆腐", 0, u"items/chou.jpg"),
+    ("烤鸭", 0, u"items/kao.jpg"),
+    ("肉", 0, u"items/rou.jpg"),
+    ("佛", 0, u"items/fo.jpg"),
+    ("跳", 0, u"items/fo.jpg"),
+    ("翡", 0, u"items/feicui.jpg"),
+    ("翠", 0, u"items/feicui.jpg"),
+    ("桂", 0, u"items/wan.jpg"),
+    # ("花", 0, u"items/wan.jpg"),
+    ("丸", 0, u"items/wan.jpg"),
+    ("豆", 0, u"items/dou.jpg"),
+    ("果", 0, u"items/dou.jpg"),
+    ("长", 0, u"items/changshou.jpg"),
+    ("寿", 0, u"items/changshou.jpg"),
+    ("面", 0, u"items/changshou.jpg"),
+    ("面", 0, u"items/changshou.jpg"),
+    ("珍", 0, u"items/zhenglu.jpg"),
+    ("梅花", 0, u"items/meihua.jpg"),
+    ("梅", 0, u"items/meihua.jpg"),
+    ("蛇胆", 0, u"items/she.jpg"),
+    ("蛇", 0, u"items/she.jpg"),
+    ("胆酒", 0, u"items/she.jpg"),
+    ("虎骨酒", 0, u"items/hugu.jpg"),
+    ("虎骨", 0, u"items/hugu.jpg"),
+    ("虎", 0, u"items/hugu.jpg"),
+    ("骨", 0, u"items/hugu.jpg"),
+    ("骨", 0, u"items/hugu.jpg"),
+    ("百味酒", 0, u"items/baiwei.jpg"),
+    ("百味", 0, u"items/baiwei.jpg"),
+    ("味", 0, u"items/baiwei.jpg"),
+    ("生梦死", 0, u"items/zuishengmengsi.jpg"),
+    ("梦死", 0, u"items/zuishengmengsi.jpg"),
+    ("梦", 0, u"items/zuishengmengsi.jpg"),
+    ("死", 0, u"items/zuishengmengsi.jpg"),
+    ("女儿", 0, u"items/nver.jpg"),
+    ("女", 0, u"items/nver.jpg"),
+
+    ("老", 1, u"items/lao.jpg"),
+    ("石", 1, u"items/shi.jpg"),
+    ("右英", 1, u"items/shi.jpg"),
+    ("英", 1, u"items/shi.jpg"),
     ("茸", 1, u"items/lurong.jpg"),
-    ("孔雀红", 2, u"items/kongquehong.jpg"),
+    ("茶花", 1, u"items/chahua.jpg"),
+    ("六", 1, u"items/liudao.jpg"),
+    ("胆", 1, u"items/dan.jpg"),
+    ("尾", 1, u"items/wei.jpg"),
+    ("草", 1, u"items/cao.jpg"),
+    ("心", 1, u"items/xin.jpg"),
+    ("火", 1, u"items/fengzhi.jpg"),
+    ("灭", 1, u"items/fengzhi.jpg"),
+    ("香水", 1, u"items/xiangshui.jpg"),
+    ("月", 1, u"items/yue.jpg"),
+    ("菁", 1, u"items/yue.jpg"),
+    ("爻", 1, u"items/yue.jpg"),
+
     ("风", 2, u"items/feng.jpg"),
+    ("饮露", 2, u"items/feng.jpg"),
+    ("白露为霜", 2, u"items/bai.jpg"),
+    ("白露", 2, u"items/bai.jpg"),
+    ("为霜", 2, u"items/bai.jpg"),
+    ("地", 2, u"items/di.jpg"),
+    ("灵芝", 2, u"items/di.jpg"),
+    ("天龙水", 2, u"items/tian.jpg"),
+    ("天龙", 2, u"items/tian.jpg"),
+    ("龙水", 2, u"items/tian.jpg"),
+    ("天充水", 2, u"items/tian.jpg"),
+    ("天充", 2, u"items/tian.jpg"),
+    ("充水", 2, u"items/tian.jpg"),
+    ("孔雀红", 2, u"items/kongquehong.jpg"),
+    ("香", 2, u"items/xiang.jpg"),
+    ("血", 2, u"items/shanhu.jpg"),
+    ("血", 2, u"items/shanhu.jpg"),
+    ("仙", 2, u"items/xian.jpg"),
+    ("狐涎", 2, u"items/xian.jpg"),
+    ("狐", 2, u"items/xian.jpg"),
+    ("涎", 2, u"items/xian.jpg"),
 ]
 
 
@@ -95,10 +168,17 @@ def qinglongTask(window_szie):
 
 
 def mouseLeftKeyClick(hwnd, position):
-    time.sleep(0.5)
+    time.sleep(1.0)
     win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, position)
     time.sleep(0.5)
     win32api.SendMessage(hwnd, win32con.WM_LBUTTONUP, win32con.MK_LBUTTON, position)
+
+
+def mouseRightKeyClick(hwnd, position):
+    time.sleep(0.5)
+    win32api.SendMessage(hwnd, win32con.WM_RBUTTONDOWN, win32con.MK_RBUTTON, position)
+    time.sleep(0.5)
+    win32api.SendMessage(hwnd, win32con.WM_RBUTTONUP, win32con.MK_RBUTTON, position)
 
 
 # 鼠标点击领取任务
@@ -145,7 +225,7 @@ def resetItemsPage(rect, hwnd, previous):
     if previous is None:
         print(u"没有初始化成功")
     else:
-        times = 5
+        times = 3
         while times > 0:
             times -= 1
             mouseLeftKeyClick(hwnd, win32api.MAKELONG(previous[0], previous[1]))
@@ -154,31 +234,32 @@ def resetItemsPage(rect, hwnd, previous):
 # 查看当前任务是啥
 def checkHasQinglongTask(rect, hwnd, previous, next, buy):
     # 125%显示比例问题
-    taskBox = [806, 215, 988, 258]
+    taskBox = [800, 215, 988, 258]
     # taskBox = [645, 173, 789, 207]
     img = ImageGrab.grab(taskBox)
     # img.show()
     img.save(u't.jpg')
     result = reader.readtext(u't.jpg')
+    print("读取结果：")
+    print(result)
     if len(result) >= 2:
         # 获取是否有任务
-        if result[0][1].find("青龙堂任务") == -1:
-            print(u"没有任务，领取任务")
+        if result[0][1].find("青") == -1 and result[0][1].find("堂") == -1:
+            print(u"没有任务，去领取任务")
             # getQinglongTask(rect, hwnd)
         else:
-            print(u"获取任务信息：")
+            # print(u"获取任务信息：")
             # 鼠标移动到该区域内
-            contentBox = result[1][0]
-            targetPos = [int(taskBox[0] / scale) + int((contentBox[2][0] - contentBox[0][0]) / 2)
-                , int(taskBox[1] / scale) + int((contentBox[2][1] - contentBox[0][1]))]
-            print(targetPos)
-            # win32api.SetCursorPos(targetPos)
+            # contentBox = result[1][0]
+            # targetPos = [int(taskBox[0] / scale) + int((contentBox[2][0] - contentBox[0][0]) / 2)
+            #    , int(taskBox[1] / scale) + int((contentBox[2][1] - contentBox[0][1]))]
             taskInfo = getTaskNeedItem(result[1][1])
             if taskInfo is None:
-                print("没有找到任务")
+                print("没有找到任务所需物品")
             else:
                 buyTaskItem(rect, hwnd, taskInfo, previous, next, buy)
-    print(result)
+    else:
+        print("完全没有认出来...")
 
 
 # 分析整个图片上面购买商品的位置，这个坐标当要使用到windows消息时候需要映射
@@ -209,13 +290,13 @@ def analysisItemInfo(baseImgPos, targetImgPos):
         if len(loc[0]) > 1:
             L += (R - L) / 2
         elif len(loc[0]) == 1:
-            print(loc)
+            # print(loc)
             pt = loc[::-1]
-            print('目标区域的左上角坐标:', pt[0], pt[1])
-            print('次数:', count)
-            print('阀值', threshold)
-            cv2.rectangle(baseImgPosTrueColor, (pt[0][0], pt[1][0]), (pt[0][0] + w, pt[1][0] + h), (34, 139, 139), 2)
-            cv2.imwrite(u"result.jpg", baseImgPosTrueColor)
+            # print('目标区域的左上角坐标:', pt[0], pt[1])
+            # print('次数:', count)
+            # print('阀值', threshold)
+            # cv2.rectangle(baseImgPosTrueColor, (pt[0][0], pt[1][0]), (pt[0][0] + w, pt[1][0] + h), (34, 139, 139), 2)
+            # cv2.imwrite(u"result.jpg", baseImgPosTrueColor)
             return pt[0][0] + int(w / 2), pt[1][0] + int(h / 2)
         elif len(loc[0]) < 1:
             R -= (R - L) / 2
@@ -249,59 +330,85 @@ def buyTaskItem(rect, hwnd, itemInfo, previous, next, buyit):
     time.sleep(2)
     mouseLeftKeyClick(hwnd, win32api.MAKELONG(buyit[0], buyit[1]))
     # 重置页面
-    time.sleep(2)
+    time.sleep(0.5)
     resetItemsPage(rect, hwnd, previous)
+    time.sleep(0.5)
+    # 上交物品
+    uploadItem(rect, hwnd, itemInfo)
 
 
 # 获取任务物品
 def getTaskNeedItem(info):
+    print("需要的物品名称：" + info)
     time: int = 20
-    while --time > 0:
+    while time > 0:
+        time -= 1
         for itemInfo in task_items_info:
             if info.find(itemInfo[0]) >= 0:
                 return itemInfo
-            else:
-                print(u"没有找到任务物品")
     return None
 
+
+upload_ok = None
+find_items = None
+upload_button_pos = None
 
 # 上交物品
 def uploadItem(rect, hwnd, taskInfo):
     long_position = win32api.MAKELONG(int((rect[2] - rect[0]) / 2), int((rect[3] - rect[1]) / 2))
     # 选人
     mouseLeftKeyClick(hwnd, long_position)
+    mouseLeftKeyClick(hwnd, long_position)
     time.sleep(1)
-    windowImg = ImageGrab.grab([int(rect[0] * scale), int(rect[1] * scale), int(rect[2] * scale), int(rect[3] * scale)])
-    windowImg.save(u"upload.jpg")
-    time.sleep(3)
-    px, py = analysisItemInfo(u"upload.jpg", u"action/upload.jpg")
+    global upload_button_pos
+    if upload_button_pos is None:
+        windowImg = ImageGrab.grab([int(rect[0] * scale), int(rect[1] * scale), int(rect[2] * scale), int(rect[3] * scale)])
+        windowImg.save(u"upload.jpg")
+        time.sleep(3)
+        upload_button_pos = analysisItemInfo(u"upload.jpg", u"action/upload.jpg")
     # 点击上交
-    mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(px / scale) - 6, int(py / scale) - 29))
+    mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(upload_button_pos[0] / scale) - 6, int(upload_button_pos[1] / scale) - 29))
     time.sleep(1.5)
     # 提交物品
     windowImg = ImageGrab.grab([int(rect[0] * scale), int(rect[1] * scale), int(rect[2] * scale), int(rect[3] * scale)])
     windowImg.save(u"uploadBox.jpg")
     time.sleep(3)
-    # 上交物品
-    px, py = analysisItemInfo(u"uploadBox.jpg", u"action/ok.jpg")
-    # TODO 坐标运算
-    px_find, py_find = analysisItemInfo(u"uploadBox.jpg", u"action/uploadbox.jpg")
-    windowImg = ImageGrab.grab([px_find - 300, py, px_find + 450, py_find + 350])
+    # 坐标运算
+    global find_items
+    if find_items is None:
+        find_items = analysisItemInfo(u"uploadBox.jpg", u"action/uploadbox.jpg")
+    windowImg = ImageGrab.grab([find_items[0] - 50, find_items[1], find_items[0] + 350, find_items[1] + 350])
     windowImg.save(u"currentItems.jpg")
     time.sleep(3)
     # 找物品
-    px_find, py_find = analysisItemInfo(u"currentItems.jpg", taskInfo[2])
-    if px_find is None or py_find is None:
+    px, py = analysisItemInfo(u"currentItems.jpg", taskInfo[2])
+    if px is None or py is None:
         print(u"没有找到物品")
         return
     else:
         # 点击确认
-        mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(px_find / scale) - 6, int(px_find / scale) - 29))
+        mouseLeftKeyClick(hwnd,
+                          win32api.MAKELONG(int((find_items[0] + px - 50) / scale) - 6, int((find_items[1] + py) / scale) - 15))
     time.sleep(1.5)
+    # 确定给予 物品
+    global upload_ok
+    if upload_ok is None:
+        print(u"初始化上交按钮位置")
+        upload_ok = analysisItemInfo(u"uploadBox.jpg", u"action/ok.jpg")
+    mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(upload_ok[0] / scale) - 6, int(upload_ok[1] / scale) - 29))
+    time.sleep(0.2)
+    mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(upload_ok[0] / scale) - 6, int(upload_ok[1] / scale) - 29))
 
-    mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(px / scale) - 6, int(py / scale) - 29))
-    time.sleep(1.5)
-    mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(px / scale) - 6, int(py / scale) - 29))
+
+# 做一次青龙任务
+def finishOneQinglongTask(rect, hwnd, previous, next, buy):
+    loop = 500
+    while loop > 0:
+        loop -= 1
+        print("第%d次任务" % loop)
+        getQinglongTask(rect, hwnd)
+        checkHasQinglongTask(rect, hwnd, previous, next, buy)
+    print("安全结束。。。")
 
 
 # 启动
@@ -324,21 +431,22 @@ if __name__ == "__main__":
     resetItemsPage(rect, hwnd, previous)
     # 创建按钮
     qinglongButton = tk.Button(root, text=u"青龙任务,人物需要在青龙室",
-                               command=lambda: MyThread(getQinglongTask, window_size, hwnd),
+                               command=lambda: MyThread(uploadItem, window_size, hwnd, task_items_info[2]),
                                width=30, height=4)
     qinglongButton.place(relx=0.2, rely=0.15, width=200)
     qinglongButton.pack()
 
     # 测试截图
     qinglongClip = tk.Button(root, text=u"测试上交",
-                             command=lambda: MyThread(uploadItem, window_size, hwnd, task_items_info[0]),
+                             command=lambda: MyThread(checkHasQinglongTask, window_size, hwnd, previous, next,
+                                                      buy),
                              width=30, height=4)
     qinglongClip.place(relx=0.2, rely=0.55, width=200)
     qinglongClip.pack()
 
     # 测试cv2图像识别
-    imgLear = tk.Button(root, text=u"测试",
-                        command=lambda: MyThread(checkHasQinglongTask, window_size, hwnd, previous, next,
+    imgLear = tk.Button(root, text=u"五十十次青龙任务",
+                        command=lambda: MyThread(finishOneQinglongTask, window_size, hwnd, previous, next,
                                                  buy),
                         width=30, height=4)
     imgLear.place(relx=0.2, rely=0.85, width=200)
