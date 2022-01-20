@@ -38,7 +38,9 @@
 
 运行结果以及日志。
 
-![main](./imgs/main.jpg)
+![main](./imgs/main.png)
+![scale](./imgs/scale.png)
+![app](./imgs/app.png)
 
 items 文件夹下面放置的是物品的识别图片
 action 文件夹下是操作图片
