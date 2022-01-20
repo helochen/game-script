@@ -4,6 +4,8 @@ import ssl
 import threading
 import time
 import tkinter as tk
+from tkinter import messagebox
+from tkinter import Entry
 
 import cv2
 import easyocr
@@ -14,6 +16,17 @@ import win32gui
 from PIL import ImageGrab
 
 scale = 1.25
+rect = None
+hwnd = None
+windows_x_extra = None
+windows_y_extra = None
+previous = None
+next = None
+buy = None
+upload_button_pos = None
+find_items = None
+reader = None
+running = False
 
 task_items_info = [
     # 物品名称，  商店页码, 对比图形路径
@@ -63,6 +76,9 @@ task_items_info = [
     ("茶花", 1, u"items/chahua.jpg"),
     ("六", 1, u"items/liudao.jpg"),
     ("胆", 1, u"items/dan.jpg"),
+    ("蕻胆", 1, u"items/dan.jpg"),
+    ("熊胆", 1, u"items/dan.jpg"),
+    ("熊", 1, u"items/dan.jpg"),
     ("尾", 1, u"items/wei.jpg"),
     ("草", 1, u"items/cao.jpg"),
     ("心", 1, u"items/xin.jpg"),
@@ -97,19 +113,10 @@ task_items_info = [
 ]
 
 
-# 测试
-# move_click(300, 300)
-
-def resolution():  # 获取屏幕分辨率
-    return win32api.GetSystemMetrics(0), win32api.GetSystemMetrics(1)
-
-
-# screen_resolution = resolution()
-
 # 获取梦幻西游窗口信息吗，返回一个矩形窗口四个坐标
 def get_window_info():
     global rect
-    wdname = u'西游2'
+    wdname = u'西游'
     handle = 0
     hWndList = []
     win32gui.EnumWindows(lambda hWnd, param: param.append(hWnd), hWndList)
@@ -117,32 +124,14 @@ def get_window_info():
         title = win32gui.GetWindowText(hwnd)
         if (title.find(wdname) >= 0):
             rect = win32gui.GetWindowRect(hwnd)
-            win32gui.SetWindowPos(hwnd, win32con.HWND_TOP, 0, 0, rect[2] - rect[0], rect[3] - rect[1],
+            win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, rect[2] - rect[0], rect[3] - rect[1],
                                   win32con.SWP_SHOWWINDOW)
             handle = hwnd
             break
-    # handle = win32gui.FindWindow(0, wdname)  # 获取窗口句柄
     if handle == 0:
-        return None, None, None
+        return None, None
     else:
-        return win32gui.GetWindowRect(handle), rect, handle
-
-
-# window_size = get_window_info()
-# 返回x相对坐标
-def get_posx(x, window_size):
-    return int((window_size[2] - window_size[0]) * x / 804)
-
-
-# 返回y相对坐标
-def get_posy(y, window_size):
-    return int((window_size[3] - window_size[1]) * y / 630)
-
-
-def stop():
-    global is_start
-    is_start = False
-    print("停止")
+        return win32gui.GetWindowRect(handle), handle
 
 
 class MyThread(threading.Thread):
@@ -159,14 +148,7 @@ class MyThread(threading.Thread):
         self.func(*self.args)
 
 
-# 青龙任务
-def qinglongTask(window_szie):
-    global is_start
-    is_start = True
-    topx, topy = window_size[0], window_size[1]
-    img_qinglong_task = ImageGrab.grab((800, 205, 1000, 200))
-
-
+# 鼠标左键点击
 def mouseLeftKeyClick(hwnd, position):
     time.sleep(1.0)
     win32api.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, position)
@@ -186,7 +168,8 @@ def getQinglongTask(rect, hwnd):
     long_position = win32api.MAKELONG(int((rect[2] - rect[0]) / 2), int((rect[3] - rect[1]) / 2))
     # 选人
     mouseLeftKeyClick(hwnd, long_position)
-    getTaskPost = win32api.MAKELONG(230, 345)
+    # 需要改坐标信息
+    getTaskPost = win32api.MAKELONG(int((244 - windows_x_extra) / scale), int((466 - windows_y_extra) / scale))
     # 领取任务
     mouseLeftKeyClick(hwnd, getTaskPost)
     # 关闭弹窗
@@ -195,6 +178,8 @@ def getQinglongTask(rect, hwnd):
 
 # 抓取整个游戏屏幕,查找按钮位置
 def catchGameWindowImgInitParams(rect):
+    global windows_x_extra
+    global windows_y_extra
     windowImg = ImageGrab.grab([int(rect[0] * scale), int(rect[1] * scale), int(rect[2] * scale), int(rect[3] * scale)])
     windowImg.save(u"game.jpg")
     time.sleep(3)
@@ -203,7 +188,7 @@ def catchGameWindowImgInitParams(rect):
     if p_x is None or p_y is None:
         return
     else:
-        previous = [int((rect[0] + p_x) / scale) - 6, int((rect[1] + p_y) / scale) - 29]
+        previous = [int((rect[0] + p_x) / scale) - windows_x_extra, int((rect[1] + p_y) / scale) - windows_y_extra]
         # win32api.SetCursorPos([int((rect[0] + p_x) / scale), int((rect[1] + p_y) / scale)])
     # 下一页按钮
     p_x, p_y = analysisItemInfo(u"game.jpg", u"pics/next.jpg")
@@ -234,19 +219,20 @@ def resetItemsPage(rect, hwnd, previous):
 # 查看当前任务是啥
 def checkHasQinglongTask(rect, hwnd, previous, next, buy):
     # 125%显示比例问题
-    taskBox = [800, 215, 988, 258]
+    taskBox = [int(640 * scale), int(170 * scale), int(790 * scale), int(206 * scale)]
     # taskBox = [645, 173, 789, 207]
     img = ImageGrab.grab(taskBox)
     # img.show()
     img.save(u't.jpg')
+    global reader
     result = reader.readtext(u't.jpg')
     print("读取结果：")
     print(result)
     if len(result) >= 2:
         # 获取是否有任务
-        if result[0][1].find("青") == -1 and result[0][1].find("堂") == -1:
+        if result[0][1].find("青") == -1 and result[0][1].find("堂") == -1 and result[0][1].find("吉才学仟务") == -1 and \
+                result[0][1].find("龙裳") == -1:
             print(u"没有任务，去领取任务")
-            # getQinglongTask(rect, hwnd)
         else:
             # print(u"获取任务信息：")
             # 鼠标移动到该区域内
@@ -264,7 +250,6 @@ def checkHasQinglongTask(rect, hwnd, previous, next, buy):
 
 # 分析整个图片上面购买商品的位置，这个坐标当要使用到windows消息时候需要映射
 def analysisItemInfo(baseImgPos, targetImgPos):
-    baseImgPosTrueColor = cv2.imread(baseImgPos, 1)
     baseImgPosGray = cv2.imread(baseImgPos, 0)
 
     # 目标图片
@@ -349,10 +334,6 @@ def getTaskNeedItem(info):
     return None
 
 
-upload_ok = None
-find_items = None
-upload_button_pos = None
-
 # 上交物品
 def uploadItem(rect, hwnd, taskInfo):
     long_position = win32api.MAKELONG(int((rect[2] - rect[0]) / 2), int((rect[3] - rect[1]) / 2))
@@ -362,12 +343,14 @@ def uploadItem(rect, hwnd, taskInfo):
     time.sleep(1)
     global upload_button_pos
     if upload_button_pos is None:
-        windowImg = ImageGrab.grab([int(rect[0] * scale), int(rect[1] * scale), int(rect[2] * scale), int(rect[3] * scale)])
+        windowImg = ImageGrab.grab(
+            [int(rect[0] * scale), int(rect[1] * scale), int(rect[2] * scale), int(rect[3] * scale)])
         windowImg.save(u"upload.jpg")
         time.sleep(3)
         upload_button_pos = analysisItemInfo(u"upload.jpg", u"action/upload.jpg")
     # 点击上交
-    mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(upload_button_pos[0] / scale) - 6, int(upload_button_pos[1] / scale) - 29))
+    mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(upload_button_pos[0] / scale) - windows_x_extra,
+                                              int(upload_button_pos[1] / scale) - windows_y_extra))
     time.sleep(1.5)
     # 提交物品
     windowImg = ImageGrab.grab([int(rect[0] * scale), int(rect[1] * scale), int(rect[2] * scale), int(rect[3] * scale)])
@@ -388,68 +371,106 @@ def uploadItem(rect, hwnd, taskInfo):
     else:
         # 点击确认
         mouseLeftKeyClick(hwnd,
-                          win32api.MAKELONG(int((find_items[0] + px - 50) / scale) - 6, int((find_items[1] + py) / scale) - 15))
+                          win32api.MAKELONG(int((find_items[0] + px - 50) / scale) - windows_x_extra,
+                                            int((find_items[1] + py) / scale) - windows_y_extra / 2))
     time.sleep(1.5)
     # 确定给予 物品
     global upload_ok
     if upload_ok is None:
         print(u"初始化上交按钮位置")
         upload_ok = analysisItemInfo(u"uploadBox.jpg", u"action/ok.jpg")
-    mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(upload_ok[0] / scale) - 6, int(upload_ok[1] / scale) - 29))
+    mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(upload_ok[0] / scale) - windows_x_extra,
+                                              int(upload_ok[1] / scale) - windows_y_extra))
     time.sleep(0.2)
-    mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(upload_ok[0] / scale) - 6, int(upload_ok[1] / scale) - 29))
+    mouseLeftKeyClick(hwnd, win32api.MAKELONG(int(upload_ok[0] / scale) - windows_x_extra,
+                                              int(upload_ok[1] / scale) - windows_y_extra))
 
 
 # 做一次青龙任务
 def finishOneQinglongTask(rect, hwnd, previous, next, buy):
-    loop = 500
-    while loop > 0:
-        loop -= 1
-        print("第%d次任务" % loop)
-        getQinglongTask(rect, hwnd)
-        checkHasQinglongTask(rect, hwnd, previous, next, buy)
-    print("安全结束。。。")
+    global running
+    if not running:
+        running = True
+        loop = 500
+        while loop > 0:
+            loop -= 1
+            print("第%d次任务" % loop)
+            getQinglongTask(rect, hwnd)
+            checkHasQinglongTask(rect, hwnd, previous, next, buy)
+        print("安全结束。。。")
+        running = False
+    else:
+        messagebox.showwarning(u"正在运行中")
+
+
+# 初始化按钮位置
+def initSysParams(sc):
+    global rect
+    global hwnd
+    global windows_x_extra
+    global windows_y_extra
+    global previous
+    global next
+    global buy
+    global upload_button_pos
+    global find_items
+    global scale
+    scale = float(sc)
+
+    rect, hwnd = get_window_info()
+    windows_x_extra = rect[2] - 800
+    windows_y_extra = rect[3] - 600
+    # 初始化按钮位置
+    previous, next, buy = catchGameWindowImgInitParams(rect)
+    resetItemsPage(rect, hwnd, previous)
+    messagebox.showinfo(u"初始化完成")
 
 
 # 启动
 if __name__ == "__main__":
     ssl._create_default_https_context = ssl._create_unverified_context
     reader = easyocr.Reader(['ch_sim', 'en'], True)
-    screen_resolution = resolution()
-    # print(screen_resolution)
-    window_size, rect, hwnd = get_window_info()
-    print(window_size)
-    # 点击人物
-    global is_start
+
     # 创建主窗口
     root = tk.Tk()
     root.title("梦幻西游辅助")
-    root.minsize(300, 250)
-    root.maxsize(300, 250)
-    # 初始化按钮位置
-    previous, next, buy = catchGameWindowImgInitParams(window_size)
-    resetItemsPage(rect, hwnd, previous)
-    # 创建按钮
-    qinglongButton = tk.Button(root, text=u"青龙任务,人物需要在青龙室",
-                               command=lambda: MyThread(uploadItem, window_size, hwnd, task_items_info[2]),
-                               width=30, height=4)
-    qinglongButton.place(relx=0.2, rely=0.15, width=200)
-    qinglongButton.pack()
+    root.minsize(350, 400)
+    root.maxsize(350, 400)
 
+    # 系统放大率
+    lb = tk.Label(root, text=u"系统放大率:", width=10)
+    lb.grid(row=0, column=0)
+    scaleText = Entry(root)
+    scaleText.insert(0, scale)
+    scaleText.grid(row=0, column=1)
+
+    # 创建按钮
+    qinglongButton = tk.Button(root, text=u"第1步初始化：青龙任务,人物需要在青龙室，",
+                               command=lambda: MyThread(initSysParams, scaleText.get()),
+                               width=35, height=4)
+    qinglongButton.place(relx=0.2, rely=0.15, width=250)
+    qinglongButton.grid(row=1, column=1)
+
+    # 创建按钮
+    getQinglongButton = tk.Button(root, text=u"第2步初始化：领取青龙任务",
+                                  command=lambda: MyThread(getQinglongTask, rect, hwnd),
+                                  width=35, height=4)
+    getQinglongButton.place(relx=0.2, rely=0.15, width=250)
+    getQinglongButton.grid(row=2, column=1)
     # 测试截图
-    qinglongClip = tk.Button(root, text=u"测试上交",
-                             command=lambda: MyThread(checkHasQinglongTask, window_size, hwnd, previous, next,
+    qinglongClip = tk.Button(root, text=u"第3步测试：测试上交当前任务",
+                             command=lambda: MyThread(checkHasQinglongTask, rect, hwnd, previous, next,
                                                       buy),
-                             width=30, height=4)
-    qinglongClip.place(relx=0.2, rely=0.55, width=200)
-    qinglongClip.pack()
+                             width=35, height=4)
+    qinglongClip.place(relx=0.2, rely=0.15, width=250)
+    qinglongClip.grid(row=3, column=1)
 
     # 测试cv2图像识别
-    imgLear = tk.Button(root, text=u"五十十次青龙任务",
-                        command=lambda: MyThread(finishOneQinglongTask, window_size, hwnd, previous, next,
+    imgLear = tk.Button(root, text=u"开跑：五十十次青龙任务",
+                        command=lambda: MyThread(finishOneQinglongTask, rect, hwnd, previous, next,
                                                  buy),
-                        width=30, height=4)
-    imgLear.place(relx=0.2, rely=0.85, width=200)
-    imgLear.pack()
+                        width=35, height=4)
+    imgLear.place(relx=0.2, rely=0.15, width=250)
+    imgLear.grid(row=4, column=1)
 
     root.mainloop()
