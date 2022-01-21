@@ -27,6 +27,7 @@ upload_button_pos = None
 find_items = None
 reader = None
 running = False
+upload_ok = None
 
 task_items_info = [
     # 物品名称，  商店页码, 对比图形路径
@@ -100,6 +101,7 @@ task_items_info = [
     ("天龙", 2, u"items/tian.jpg"),
     ("龙水", 2, u"items/tian.jpg"),
     ("天充水", 2, u"items/tian.jpg"),
+    ("天无水", 2, u"items/tian.jpg"),
     ("天充", 2, u"items/tian.jpg"),
     ("充水", 2, u"items/tian.jpg"),
     ("孔雀红", 2, u"items/kongquehong.jpg"),
@@ -116,7 +118,7 @@ task_items_info = [
 # 获取梦幻西游窗口信息吗，返回一个矩形窗口四个坐标
 def get_window_info():
     global rect
-    wdname = u'西游'
+    wdname = u'西游2'
     handle = 0
     hWndList = []
     win32gui.EnumWindows(lambda hWnd, param: param.append(hWnd), hWndList)
@@ -171,6 +173,7 @@ def getQinglongTask(rect, hwnd):
     # 需要改坐标信息
     getTaskPost = win32api.MAKELONG(int((244 - windows_x_extra) / scale), int((466 - windows_y_extra) / scale))
     # 领取任务
+    mouseLeftKeyClick(hwnd, getTaskPost)
     mouseLeftKeyClick(hwnd, getTaskPost)
     # 关闭弹窗
     mouseLeftKeyClick(hwnd, getTaskPost)
@@ -371,8 +374,8 @@ def uploadItem(rect, hwnd, taskInfo):
     else:
         # 点击确认
         mouseLeftKeyClick(hwnd,
-                          win32api.MAKELONG(int((find_items[0] + px - 50) / scale) - windows_x_extra,
-                                            int((find_items[1] + py) / scale) - windows_y_extra / 2))
+                          win32api.MAKELONG(int((find_items[0] + px - 50) / scale - windows_x_extra),
+                                            int((find_items[1] + py) / scale - windows_y_extra / 2)))
     time.sleep(1.5)
     # 确定给予 物品
     global upload_ok
